@@ -1,0 +1,5 @@
+---
+title: "Inicio"
+---
+
+Esta página contiene una recopilación de teoría y ejercicios básicos sobre códigos algebraicos y criptografía.
