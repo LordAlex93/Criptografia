@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.39">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>4. Logaritmo discreto. ElGamal. – Códigos y Criptografía</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-e26003cea8cd680ca0c55a263523d882.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-2be10d9e998f81ff6e49e26833438aa5.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-sidebar docked">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item">
+      Códigos y Criptografía
+      </li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../../">Códigos y Criptografía</a> 
+    </div>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Inicio</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Inicio</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Teoría</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+ <span class="menu-text">Codigos_Lineales.qmd</span>
+  </li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true">
+ <span class="menu-text">Scripts</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../Tutorial.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Criptosistema de McEliece</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+<div class="quarto-sidebar-footer"><div class="sidebar-footer-item">
+<p>Hecho con <a href="https://quarto.org/">Quarto</a></p>
+</div></div></nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
+        
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">4. Logaritmo discreto. ElGamal.</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="calcule-usando-el-algoritmo-paso-de-gigante-paso-de-bebé" class="level4">
+<h4 class="anchored" data-anchor-id="calcule-usando-el-algoritmo-paso-de-gigante-paso-de-bebé">1. Calcule, usando el algoritmo paso de gigante paso de bebé:</h4>
+<div id="b26ee01e-3df9-404c-984a-a3d69cf70640" class="cell" data-editable="true" data-slideshow="{&quot;slide_type&quot;:&quot;&quot;}" data-tags="[]" data-execution_count="23">
+<pre class="sage cell-code"><code># Baby step giant step
+def bsgs(a,b,n):
+    m = ceil(sqrt(n))
+    t = []
+    for j in range(m):
+        t.append((j,a^j % n))
+    am = a^(-m) % n
+    c = b
+    i = 0
+    while i &lt; m:
+        for j in range(m):
+            if t[j][1] == c:
+                return i*m+j
+        c = (c*am)%n
+        i += 1
+        </code></pre>
+</div>
+</section>
+<section id="a-log_1121-en-mathbbf_71." class="level4">
+<h4 class="anchored" data-anchor-id="a-log_1121-en-mathbbf_71.">a) <span class="math inline">\(\log_{11}(21)\)</span> en <span class="math inline">\(\mathbb{F}_{71}\)</span>.</h4>
+<div id="0549e8fe-ffc1-4f57-9019-750ddfc2a63c" class="cell" data-execution_count="67">
+<pre class="sage cell-code"><code>bsgs(11,21,71)</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="67">
+<pre><code>37</code></pre>
+</div>
+</div>
+</section>
+<section id="b-log_156116-en-mathbbf_593." class="level4">
+<h4 class="anchored" data-anchor-id="b-log_156116-en-mathbbf_593.">b) <span class="math inline">\(\log_{156}(116)\)</span> en <span class="math inline">\(\mathbb{F}_{593}\)</span>.</h4>
+<div id="5c78dd3d-cbf2-4752-9006-ec1b80850c1d" class="cell" data-execution_count="68">
+<pre class="sage cell-code"><code>bsgs(156,116,593)</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="68">
+<pre><code>59</code></pre>
+</div>
+</div>
+<div id="e08b4d1f-3553-453e-84c3-807ec3326f2d" class="cell" data-execution_count="69">
+<pre class="sage cell-code"><code>(156^59)%593</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="69">
+<pre><code>116</code></pre>
+</div>
+</div>
+</section>
+<section id="c-log_6502213-en-mathbbf_3571." class="level4">
+<h4 class="anchored" data-anchor-id="c-log_6502213-en-mathbbf_3571.">c) <span class="math inline">\(\log_{650}(2213)\)</span> en <span class="math inline">\(\mathbb{F}_{3571}\)</span>.</h4>
+<div id="99fdd979-d0cc-46a2-99da-c404789490d6" class="cell" data-execution_count="70">
+<pre class="sage cell-code"><code>bsgs(650,2213,3571)</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="70">
+<pre><code>319</code></pre>
+</div>
+</div>
+<div id="95e2fd66-a53e-4a47-9590-7455f99173e4" class="cell" data-execution_count="71">
+<pre class="sage cell-code"><code>(650^319)%3571</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="71">
+<pre><code>2213</code></pre>
+</div>
+</div>
+</section>
+<section id="calcule-usando-el-algoritmo-de-pohlig-hellman-el-log_ga-en-mathbbf_p-en-los-casos-siguientes" class="level4">
+<h4 class="anchored" data-anchor-id="calcule-usando-el-algoritmo-de-pohlig-hellman-el-log_ga-en-mathbbf_p-en-los-casos-siguientes">2. Calcule, usando el algoritmo de Pohlig-Hellman, el <span class="math inline">\(\log_g(a)\)</span> en <span class="math inline">\(\mathbb{F}_p\)</span> en los casos siguientes:</h4>
+<div id="5392dd01-30d1-47e9-a152-78a442d36bfb" class="cell" data-execution_count="12">
+<pre class="sage cell-code"><code># Pohlig-Hellman
+
+def ph(g,a,n):
+    Zn = IntegerModRing(n)
+    ff = []
+    nf = len(n.factor())
+    for k in range(nf):
+        ff.append((n.factor()[k][0])**(n.factor()[k][1]))
+    gi = []
+    hi = []
+    xi = []
+    for i in range(0,nf):
+        gi.append(Zn(g)**(n/ff[i]))
+        hi.append(Zn(a)**(n/ff[i]))
+        xi.append(bsgs(gi[i],hi[i],n))
+    return crt(xi,ff)</code></pre>
+</div>
+</section>
+<section id="a-p433-g7-a166." class="level4">
+<h4 class="anchored" data-anchor-id="a-p433-g7-a166.">a) <span class="math inline">\(p=433\)</span>, <span class="math inline">\(g=7\)</span>, <span class="math inline">\(a=166\)</span>.</h4>
+<div id="6084beb7-8348-49bb-92f4-c6f631d5ea8e" class="cell" data-execution_count="13">
+<pre class="sage cell-code"><code>ph(7,166,433)</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="13">
+<pre><code>47</code></pre>
+</div>
+</div>
+</section>
+<section id="b-p746497-g10-a243278." class="level4">
+<h4 class="anchored" data-anchor-id="b-p746497-g10-a243278.">b) <span class="math inline">\(p=746497\)</span>, <span class="math inline">\(g=10\)</span>, <span class="math inline">\(a=243278\)</span>.</h4>
+<div id="051ea8aa-8a0a-4d79-95a9-3e8d365bf628" class="cell" data-execution_count="14">
+<pre class="sage cell-code"><code>ph(10,243278,746497)</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="14">
+<pre><code>223755</code></pre>
+</div>
+</div>
+</section>
+<section id="c-p41022299-g2-a39183497." class="level4">
+<h4 class="anchored" data-anchor-id="c-p41022299-g2-a39183497.">c) <span class="math inline">\(p=41022299\)</span>, <span class="math inline">\(g=2\)</span>, <span class="math inline">\(a=39183497\)</span>.</h4>
+<div id="14bea4c6-37f2-4287-82b9-5820bce45117" class="cell" data-execution_count="21">
+<pre class="sage cell-code"><code>ph(2,39183497,41022299)</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="21">
+<pre><code>33703314</code></pre>
+</div>
+</div>
+</section>
+<section id="d-p1291799-g17-a192988." class="level4">
+<h4 class="anchored" data-anchor-id="d-p1291799-g17-a192988.">d) <span class="math inline">\(p=1291799\)</span>, <span class="math inline">\(g=17\)</span>, <span class="math inline">\(a=192988\)</span>.</h4>
+<div id="992c4788-f496-48b0-a720-1381cf37b541" class="cell" data-execution_count="25">
+<pre class="sage cell-code"><code>ph(17,192988,1291799)</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="25">
+<pre><code>984414</code></pre>
+</div>
+</div>
+</section>
+<section id="dado-el-texto-cifrado-en-el-documento-que-se-ha-cifrado-usando-el-criptosistema-de-elgamal-con-p31847-y-que-log_5180747899.-cada-elemento-de-mathbbz_p-representa-tres-letras-en-inglés." class="level4">
+<h4 class="anchored" data-anchor-id="dado-el-texto-cifrado-en-el-documento-que-se-ha-cifrado-usando-el-criptosistema-de-elgamal-con-p31847-y-que-log_5180747899.-cada-elemento-de-mathbbz_p-representa-tres-letras-en-inglés.">3. Dado el texto cifrado: (en el documento) que se ha cifrado usando el criptosistema de ElGamal con <span class="math inline">\(p=31847\)</span>, y que <span class="math inline">\(\log_5(18074)=7899\)</span>. Cada elemento de <span class="math inline">\(\mathbb{Z}_p\)</span> representa tres letras en inglés.</h4>
+<div id="68af58d9-bc52-4744-835f-53720a32d763" class="cell" data-execution_count="1">
+<pre class="sage cell-code"><code>p = 31847
+Zp = IntegerModRing(p)
+alpha = 5
+a = 7899
+beta = 18074</code></pre>
+</div>
+<div id="1b72c9ca-a430-42f1-8739-699a2a20120c" class="cell" data-execution_count="2">
+<pre class="sage cell-code"><code>d1 = Zp(14409)*Zp(3781^a)^(-1)
+d1</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="2">
+<pre><code>12354</code></pre>
+</div>
+</div>
+<div id="8479eeac-d542-4b2a-918c-bd92e64a6815" class="cell" data-execution_count="3">
+<pre class="sage cell-code"><code>(12354).digits(26)</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="3">
+<pre><code>[4, 7, 18]</code></pre>
+</div>
+</div>
+<div id="459353c4-fb04-433f-8d06-91a7a1e20799" class="cell" data-execution_count="6">
+<pre class="sage cell-code"><code>(31552, 3930)
+x = Zp(3930)*Zp(31552^a)^(-1)</code></pre>
+</div>
+<div id="4815b831-ccb5-4ea0-bb20-935290c1b9e4" class="cell" data-execution_count="7">
+<pre class="sage cell-code"><code>x</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="7">
+<pre><code>12662</code></pre>
+</div>
+</div>
+<div id="9a6e9071-35bf-48d7-8d42-d940129a0d90" class="cell" data-execution_count="8">
+<pre class="sage cell-code"><code>(12662.digits(26))</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="8">
+<pre><code>[0, 19, 18]</code></pre>
+</div>
+</div>
+<div id="59cf92b5-ade3-49f8-9c36-4f5f54cc1dc5" class="cell" data-execution_count="29">
+<pre class="sage cell-code"><code>Zp(15442)*Zp(27214^a)^(-1)</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="29">
+<pre><code>8884</code></pre>
+</div>
+</div>
+<div id="485cbefb-1f8d-47d6-9844-0602b28155b9" class="cell" data-execution_count="61">
+<pre class="sage cell-code"><code>010.str(26)</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="61">
+<pre><code>'a'</code></pre>
+</div>
+</div>
+<div id="b39b3147-66e0-4137-9c9a-52a5ca533739" class="cell" data-execution_count="32">
+<pre class="sage cell-code"><code>ZZ(Zp(15442)*Zp(27214^a)^(-1)).digits(26)</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="32">
+<pre><code>[18, 3, 13]</code></pre>
+</div>
+</div>
+<div id="3facab26-c24d-4da4-89aa-1841ff934267" class="cell" data-execution_count="4">
+<pre class="sage cell-code"><code>L = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
+</code></pre>
+</div>
+<div id="43afe6ce-cf41-4573-8611-a8ab6753ffa3" class="cell" data-execution_count="9">
+<pre class="sage cell-code"><code>for i in [18,19,0]:
+    print (L[i])</code></pre>
+<div class="cell-output cell-output-stdout">
+<pre><code>S
+T
+A</code></pre>
+</div>
+</div>
+</section>
+<section id="sea-p227." class="level4">
+<h4 class="anchored" data-anchor-id="sea-p227.">4. Sea <span class="math inline">\(p=227\)</span>.</h4>
+</section>
+<section id="a-compruebe-que-a2-es-un-elemento-primitivo" class="level4">
+<h4 class="anchored" data-anchor-id="a-compruebe-que-a2-es-un-elemento-primitivo">a) Compruebe que <span class="math inline">\(a=2\)</span> es un elemento primitivo:</h4>
+<div id="7d4fc776-7b1d-4d70-91d3-feaf7bfbe309" class="cell" data-execution_count="1">
+<pre class="sage cell-code"><code>reset()
+p = 227
+Zp.&lt;a&gt; = GF(p)</code></pre>
+</div>
+<div id="f57ef06b-b0cf-4a57-9102-0bd41b1d0fcc" class="cell" data-execution_count="2">
+<pre class="sage cell-code"><code>order(Zp(2))</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="2">
+<pre><code>227</code></pre>
+</div>
+</div>
+</section>
+<section id="b-calcule-a32-a40-a59-y-a156-módulo-p-y-factorícelos-usando-la-base-de-divisores-mathcalb235711." class="level4">
+<h4 class="anchored" data-anchor-id="b-calcule-a32-a40-a59-y-a156-módulo-p-y-factorícelos-usando-la-base-de-divisores-mathcalb235711.">b) Calcule <span class="math inline">\(a^{32}\)</span>, <span class="math inline">\(a^{40}\)</span>, <span class="math inline">\(a^{59}\)</span> y <span class="math inline">\(a^{156}\)</span> módulo <span class="math inline">\(p\)</span>, y factorícelos usando la base de divisores <span class="math inline">\(\mathcal{B}=\{2,3,5,7,11\}\)</span>.</h4>
+<div id="f4ec5106-a30f-4879-a71f-57080a77d25e" class="cell" data-execution_count="3">
+<pre class="sage cell-code"><code>(Zp(2)^32)</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="3">
+<pre><code>176</code></pre>
+</div>
+</div>
+<div id="c8cf27c0-8f0b-44b3-8740-d60df1412e8c" class="cell" data-execution_count="7">
+<pre class="sage cell-code"><code>176.factor()</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="7">
+<pre><code>2^4 * 11</code></pre>
+</div>
+</div>
+<div id="5728ec1c-fa26-4db3-b2c5-3bbf42dd5c8b" class="cell" data-execution_count="44">
+<pre class="sage cell-code"><code>Zp(2)^40</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="44">
+<pre><code>110</code></pre>
+</div>
+</div>
+<div id="c4157ec3-6fa8-442d-ad47-fea0dfdb34be" class="cell" data-execution_count="8">
+<pre class="sage cell-code"><code>110.factor()</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="8">
+<pre><code>2 * 5 * 11</code></pre>
+</div>
+</div>
+<div id="f80eb585-617b-4962-8d0a-e810a5efdaea" class="cell" data-execution_count="45">
+<pre class="sage cell-code"><code>Zp(2)^59</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="45">
+<pre><code>60</code></pre>
+</div>
+</div>
+<div id="24adac8c-50fb-4c66-a6f7-50ebd9a24016" class="cell" data-execution_count="9">
+<pre class="sage cell-code"><code>60.factor()</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="9">
+<pre><code>2^2 * 3 * 5</code></pre>
+</div>
+</div>
+<div id="fb59e9cc-5ef7-4467-966e-5531d8a91726" class="cell" data-execution_count="46">
+<pre class="sage cell-code"><code>Zp(2)^156</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="46">
+<pre><code>28</code></pre>
+</div>
+</div>
+<div id="1500d1d2-4d4e-4de5-b1d6-abc696c5ecb5" class="cell" data-execution_count="10">
+<pre class="sage cell-code"><code>28.factor()</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="10">
+<pre><code>2^2 * 7</code></pre>
+</div>
+</div>
+</section>
+<section id="c-calcule-log3-log5-log7-y-log11-en-base-a." class="level4">
+<h4 class="anchored" data-anchor-id="c-calcule-log3-log5-log7-y-log11-en-base-a.">c) Calcule <span class="math inline">\(\log\,3\)</span>, <span class="math inline">\(\log\,5\)</span>, <span class="math inline">\(\log\,7\)</span>, y <span class="math inline">\(\log\,11\)</span> en base <span class="math inline">\(a\)</span>.</h4>
+<p>Para ello tenemos que resolver el siguiente sistema de ecuaciones: <span class="math display">\[176=4\log 2+\log 11,\]</span> <span class="math display">\[110 = \log 2 + \log 5 +\log 11,\]</span> <span class="math display">\[60=2 \log 2 + \log 3 + \log 5,\]</span> <span class="math display">\[28 = 2 \log 2 + \log 7.\]</span> Recordemos que <span class="math inline">\(a=2\)</span>, con lo que <span class="math inline">\(\log 2 = 1\)</span> en nuestra base.</p>
+<p>El sistema queda casi inmediato, con la siguiente forma: <span class="math display">\[172 = \log 11,\]</span> <span class="math display">\[109 = \log 5 +\log 11,\]</span> <span class="math display">\[58 = \log 3 + \log 5,\]</span> <span class="math display">\[26 = \log 7.\]</span></p>
+<p>Con lo que operando por reducción, podemos sacar <span class="math inline">\(\log 5\)</span> y <span class="math inline">\(\log 3\)</span>. La solución es: <span class="math inline">\(\log 3 = 121\)</span>, <span class="math inline">\(\log 5 = -63 \equiv 164\)</span>, <span class="math inline">\(\log 7 = 26\)</span> y <span class="math inline">\(\log 11 = 172\)</span>.</p>
+</section>
+<section id="d-calcule-log-173-en-base-a." class="level4">
+<h4 class="anchored" data-anchor-id="d-calcule-log-173-en-base-a.">d) Calcule <span class="math inline">\(\log 173\)</span> en base <span class="math inline">\(a\)</span>.</h4>
+<p>Haciendo uso del consejo, tenemos que factorizar <span class="math inline">\(173\cdot 2^{177}\)</span>:</p>
+<div id="468f259d-4e14-4d93-bbe8-35e6bc5e460e" class="cell" data-execution_count="12">
+<pre class="sage cell-code"><code>Zp(173)*Zp(2^(177))</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="12">
+<pre><code>168</code></pre>
+</div>
+</div>
+<div id="aeda7435-42dc-4972-8cbc-a1d9bd6e2091" class="cell" data-execution_count="13">
+<pre class="sage cell-code"><code>168.factor()</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="13">
+<pre><code>2^3 * 3 * 7</code></pre>
+</div>
+</div>
+<p>Tenemos pues que <span class="math inline">\(\log 173=3 \log 2 + \log 3 + \log 7 \text{ mód }227\)</span>.</p>
+<div id="cf1ce560-bb44-4fb5-b3d6-8f890ac997f9" class="cell" data-execution_count="15">
+<pre class="sage cell-code"><code>Zp(3+121+26)</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="15">
+<pre><code>150</code></pre>
+</div>
+</div>
+<p>La solución es <span class="math inline">\(\log 173 = 150\)</span>.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
