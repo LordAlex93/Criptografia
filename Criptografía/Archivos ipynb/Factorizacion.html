@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.39">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Algoritmo p-1 de Pollard – Códigos y Criptografía</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting-e26003cea8cd680ca0c55a263523d882.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap-2be10d9e998f81ff6e49e26833438aa5.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-sidebar docked">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" role="button" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item">
+      Códigos y Criptografía
+      </li></ol></nav>
+        <a class="flex-grow-1" role="navigation" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation docked overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="../../">Códigos y Criptografía</a> 
+    </div>
+      </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Inicio</span></a>
+  </div>
+</li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true">
+ <span class="menu-text">Teoría</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../Codigos_Lineales.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Códigos Lineales</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true">
+ <span class="menu-text">Notebooks</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" role="navigation" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../Curvas Elípticas.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Curvas Elípticas</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../../Tutorial.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Criptosistema de McEliece</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+    </ul>
+    </div>
+<div class="quarto-sidebar-footer"><div class="sidebar-footer-item">
+<p>Hecho con <a href="https://quarto.org/">Quarto</a></p>
+</div></div></nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#ejercicio-2" id="toc-ejercicio-2" class="nav-link active" data-scroll-target="#ejercicio-2">Ejercicio 2</a></li>
+  <li><a href="#ejercicio-3" id="toc-ejercicio-3" class="nav-link" data-scroll-target="#ejercicio-3">Ejercicio 3</a></li>
+  <li><a href="#ejercicio-4" id="toc-ejercicio-4" class="nav-link" data-scroll-target="#ejercicio-4">Ejercicio 4</a></li>
+  <li><a href="#ejercicio-5" id="toc-ejercicio-5" class="nav-link" data-scroll-target="#ejercicio-5">Ejercicio 5</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Algoritmo p-1 de Pollard</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<div id="b61de9a5-1a57-4bed-bfa7-38b7e20ee021" class="cell" data-execution_count="5">
+<pre class="sage cell-code"><code>def mcm(B):
+    m = lcm(1,2)
+    mm = 0
+    if B == 1:
+        return 1
+    for k in range(3,B+1):
+        mm = lcm(m,k)
+        m = mm
+    return m</code></pre>
+</div>
+<div id="6daed5a3-278c-41c4-b424-366569f2cd99" class="cell" data-execution_count="6">
+<pre class="sage cell-code"><code>def pollardp(n,B,a,A):
+    m = mcm(B)
+    x = (a**m-1) % n
+    g = gcd(x,n)
+    if g != 1:
+        return g
+    while a &lt; A:
+        a+=1
+        x = (a**m-1) % n
+        g = gcd(x,n)
+        if g != 1:
+            return g</code></pre>
+</div>
+<section id="i-n1739" class="level4">
+<h4 class="anchored" data-anchor-id="i-n1739">i) n=1739</h4>
+<div id="2f50841d-f036-47f6-ac07-eb23f16c962c" class="cell" data-execution_count="53">
+<pre class="sage cell-code"><code>B = 10
+n = 1739
+pollardp(n,B,2,10)</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="53">
+<pre><code>37</code></pre>
+</div>
+</div>
+<div id="132669d6-2a3b-4af4-a3ab-abd79dca240d" class="cell" data-execution_count="29">
+<pre class="sage cell-code"><code>1739/37</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="29">
+<pre><code>47</code></pre>
+</div>
+</div>
+<div id="cd7ecd82-ef7f-44be-9ad1-816889456f1c" class="cell" data-execution_count="31">
+<pre class="sage cell-code"><code>is_prime(47)</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="31">
+<pre><code>True</code></pre>
+</div>
+</div>
+<p>Tenemos pues que la factorización es: 1739 = 37*47</p>
+</section>
+<section id="ii-n220459" class="level4">
+<h4 class="anchored" data-anchor-id="ii-n220459">ii) n=220459</h4>
+<div id="1f6ab9eb-1e12-4ba2-92ca-f76b622d429f" class="cell" data-execution_count="7">
+<pre class="sage cell-code"><code>B = 10
+n = 220459
+pollardp(n,B,2,10)</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="7">
+<pre><code>449</code></pre>
+</div>
+</div>
+<div id="2e23f00b-216a-41fc-96f7-aadcc8aaa3fe" class="cell" data-execution_count="9">
+<pre class="sage cell-code"><code>n/pollardp(n,B,2,10)</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="9">
+<pre><code>491</code></pre>
+</div>
+</div>
+<div id="08242218-d08a-42fb-9656-a626ff77fb70" class="cell" data-execution_count="10">
+<pre class="sage cell-code"><code>is_prime(491)</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="10">
+<pre><code>True</code></pre>
+</div>
+</div>
+<p>Tenemos por tanto que la factorización es: 220459 = 449*491</p>
+</section>
+<section id="iii-n48356747" class="level4">
+<h4 class="anchored" data-anchor-id="iii-n48356747">iii) n=48356747</h4>
+<div id="3517522f-01fb-4a08-9757-03700cd0f5a1" class="cell" data-execution_count="16">
+<pre class="sage cell-code"><code>B = 20
+n = 48356747
+pollardp(n,B,2,10)</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="16">
+<pre><code>6917</code></pre>
+</div>
+</div>
+<div id="9d4c11c2-a270-4bac-84d4-d523862d01c9" class="cell" data-execution_count="17">
+<pre class="sage cell-code"><code>n/pollardp(n,B,2,10)</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="17">
+<pre><code>6991</code></pre>
+</div>
+</div>
+<div id="d73812db-65d1-43e0-acd6-9e3cfb3ccfdf" class="cell" data-execution_count="41">
+<pre class="sage cell-code"><code>is_prime(6991)</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="41">
+<pre><code>True</code></pre>
+</div>
+</div>
+<p>Tenemos por tanto que la factorización es: 48356747 = 6917*6991</p>
+<p>El algoritmo ha funcionado ya que en las iteraciones puestas (A) hemos conseguido que mcd(a^A-1,n) != n, obteniendo con esto un factor de n, ya que a^A-1 no es múltiplo de n.</p>
+</section>
+<section id="ejercicio-2" class="level3">
+<h3 class="anchored" data-anchor-id="ejercicio-2">Ejercicio 2</h3>
+<div id="346ae72f-e926-4d70-936a-cd818134bd57" class="cell" data-execution_count="1">
+<pre class="sage cell-code"><code>def fermat(n):
+    t = int(sqrt(n))+1
+    s = t**2-n
+    while sqrt(s) != int(sqrt(s)):
+        s = t**2-n
+        t +=1
+    return (t-sqrt(s),t+sqrt(s))
+        </code></pre>
+</div>
+<div id="ab6c8085-157e-4eaa-8f5d-bfab1d9f6a26" class="cell" data-execution_count="2">
+<pre class="sage cell-code"><code>fermat(53357)</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="2">
+<pre><code>(229, 233)</code></pre>
+</div>
+</div>
+<div id="f9605082-6ce4-4263-8622-bbbdc8839e1f" class="cell" data-execution_count="3">
+<pre class="sage cell-code"><code>fermat(34571)</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="3">
+<pre><code>(181, 191)</code></pre>
+</div>
+</div>
+<div id="67dcffd0-a3c2-4cef-a62f-3dc0fb21645f" class="cell" data-execution_count="4">
+<pre class="sage cell-code"><code>fermat(25777)</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="4">
+<pre><code>(149, 173)</code></pre>
+</div>
+</div>
+<div id="b2fc8660-cc25-43ab-9c2c-663378350b7a" class="cell" data-execution_count="5">
+<pre class="sage cell-code"><code>fermat(64213)</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="5">
+<pre><code>(158, 410)</code></pre>
+</div>
+</div>
+</section>
+<section id="ejercicio-3" class="level3">
+<h3 class="anchored" data-anchor-id="ejercicio-3">Ejercicio 3</h3>
+<div id="ec21adee-7151-40f5-9902-2e0152e0a32e" class="cell" data-execution_count="1">
+<pre class="sage cell-code"><code>def fermatext(n,k,binit):
+    b = binit
+    a = sqrt(k*n+b^2)
+    while a != int(a):
+        b += 1
+        a = sqrt(k*n+b^2)
+    m1 = gcd(k*n,a-b)
+    m2 = gcd(k*n,a+b)
+    return m1,m2</code></pre>
+</div>
+<section id="i-n203299-y-k3." class="level4">
+<h4 class="anchored" data-anchor-id="i-n203299-y-k3.">i) <span class="math inline">\(n=203299\)</span> y <span class="math inline">\(k=3\)</span>.</h4>
+<div id="5be35ded-0125-4ea8-9ca6-3d781278f4bd" class="cell" data-execution_count="2">
+<pre class="sage cell-code"><code>fermatext(203299,3,2)</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="2">
+<pre><code>(773, 789)</code></pre>
+</div>
+</div>
+<div id="b8bc21fd-5c18-413f-a9c5-1e062c0e70f1" class="cell" data-execution_count="3">
+<pre class="sage cell-code"><code>factor(203299)</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="3">
+<pre><code>263 * 773</code></pre>
+</div>
+</div>
+<p>Hemos comprobado que efectivamente hemos encontrado un divisor.</p>
+</section>
+<section id="ii-n143041-y-k247." class="level4">
+<h4 class="anchored" data-anchor-id="ii-n143041-y-k247.">ii) <span class="math inline">\(n=143041\)</span> y <span class="math inline">\(k=247\)</span>.</h4>
+<div id="e5ec516b-a7a6-4924-b681-b74fc5a42da0" class="cell" data-execution_count="9">
+<pre class="sage cell-code"><code>fermatext(143041,247,2)</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="9">
+<pre><code>(5941, 5947)</code></pre>
+</div>
+</div>
+<div id="3c664f6c-2716-4e16-aaa9-77c629a7d405" class="cell" data-execution_count="5">
+<pre class="sage cell-code"><code>factor(143041)</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="5">
+<pre><code>313 * 457</code></pre>
+</div>
+</div>
+<p>No hemos encontrado uno de los factores de nuestro número, el método es estocástico y no implica que siempre se encuentre un factor.</p>
+</section>
+<section id="iii-n1226987-y-k3-comience-con-b_init36." class="level4">
+<h4 class="anchored" data-anchor-id="iii-n1226987-y-k3-comience-con-b_init36.">iii) <span class="math inline">\(n=1226987\)</span> y <span class="math inline">\(k=3\)</span> (comience con <span class="math inline">\(b_{init}=36\)</span>).</h4>
+<div id="6ca28fb1-7653-48be-9474-207c2fd2a61a" class="cell" data-execution_count="10">
+<pre class="sage cell-code"><code>fermatext(1226987,3,36)</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="10">
+<pre><code>(1879, 1959)</code></pre>
+</div>
+</div>
+<div id="935d2a16-8a29-4b60-b751-b6e77b1a2f83" class="cell" data-execution_count="11">
+<pre class="sage cell-code"><code>factor(1226987)</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="11">
+<pre><code>653 * 1879</code></pre>
+</div>
+</div>
+<p>Por tanto, hemos encontrado un divisor.</p>
+</section>
+<section id="iv-n2510839-y-k21-comience-con-b_init90." class="level4">
+<h4 class="anchored" data-anchor-id="iv-n2510839-y-k21-comience-con-b_init90.">iv) <span class="math inline">\(n=2510839\)</span> y <span class="math inline">\(k=21\)</span> (comience con <span class="math inline">\(b_{init}=90\)</span>).</h4>
+<div id="09acda66-b1a8-4d2b-9c89-0ec668de84fe" class="cell" data-execution_count="13">
+<pre class="sage cell-code"><code>fermatext(2510839,21,90)</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="13">
+<pre><code>(7167, 7357)</code></pre>
+</div>
+</div>
+<div id="83fd1adb-54e0-4ba4-8fe9-371f1b8f21f8" class="cell" data-execution_count="14">
+<pre class="sage cell-code"><code>factor(2510839)</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="14">
+<pre><code>1051 * 2389</code></pre>
+</div>
+</div>
+<p>En este caso tampoco hemos encontrado un factor de nuestro número.</p>
+</section>
+</section>
+<section id="ejercicio-4" class="level3">
+<h3 class="anchored" data-anchor-id="ejercicio-4">Ejercicio 4</h3>
+<div id="212167c5-361a-44f9-bbe2-7ea5368e38b2" class="cell" data-execution_count="18">
+<pre class="sage cell-code"><code>def f(x):
+    return x**2+1
+def rhopollard(n,f):
+    a = 2
+    b = 2
+    i = 0
+    while True:
+        a = f(a) % n
+        b = f(f(b)) % n
+        d = gcd(a-b,n)
+        if d != 1 and d &lt; n:
+            return d
+        if d == n:
+            return False</code></pre>
+</div>
+<div id="2f9f9450-b0e6-4b0b-b519-ca3428121927" class="cell" data-execution_count="1">
+<pre class="sage cell-code"><code>nf = []
+for k in range(5,20):
+    nf.append(2**(2**k)+1)</code></pre>
+</div>
+<div id="6f78e46c-3815-4142-825a-34555ac3cdaa" class="cell" data-execution_count="1">
+<pre class="sage cell-code"><code>def fk(x,k):
+    return x**(2**k)+1
+def rhopollardk(n,k):
+    a = nf[0]
+    b = nf[0]
+    while True:
+        a = fk(a,k) % n
+        b = fk(fk(b,k),k) % n
+        d = gcd(a-b,n)
+        if d != 1 and d &lt; n:
+            return d
+        if d == n:
+            return False
+
+def ej4():
+    k = 0
+    while k &lt; 8:
+        
+        print("k="+str(k+5)+"\n")
+        print(rhopollardk(nf[k],k))
+        %time
+        k +=1</code></pre>
+</div>
+<div id="65e96c2a-146d-49a7-a908-92a4cd3df5c8" class="cell" data-execution_count="116">
+<pre class="sage cell-code"><code>ej4()</code></pre>
+<div class="cell-output cell-output-stdout">
+<pre><code>k=5
+
+641
+CPU times: user 6 µs, sys: 2 µs, total: 8 µs
+Wall time: 14.1 µs
+k=6
+
+274177
+CPU times: user 2 µs, sys: 1e+03 ns, total: 3 µs
+Wall time: 3.81 µs
+k=7
+
+59649589127497217
+CPU times: user 1e+03 ns, sys: 0 ns, total: 1e+03 ns
+Wall time: 3.1 µs
+k=8
+
+1238926361552897
+CPU times: user 2 µs, sys: 1e+03 ns, total: 3 µs
+Wall time: 3.1 µs
+k=9
+
+2424833
+CPU times: user 0 ns, sys: 0 ns, total: 0 ns
+Wall time: 1.91 µs
+k=10
+
+45592577
+CPU times: user 1e+03 ns, sys: 1e+03 ns, total: 2 µs
+Wall time: 2.15 µs
+k=11
+
+319489
+CPU times: user 2 µs, sys: 1e+03 ns, total: 3 µs
+Wall time: 4.77 µs
+k=12
+
+114689
+CPU times: user 1e+03 ns, sys: 0 ns, total: 1e+03 ns
+Wall time: 2.15 µs</code></pre>
+</div>
+</div>
+<div id="f1412506-7328-437f-a822-cd4b29e2e18e" class="cell" data-execution_count="5">
+<pre class="sage cell-code"><code>nf[0]/641</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="5">
+<pre><code>6700417</code></pre>
+</div>
+</div>
+<div id="e18a164f-889b-427f-aaf5-096f5e612388" class="cell" data-execution_count="6">
+<pre class="sage cell-code"><code>is_prime(6700417)</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="6">
+<pre><code>True</code></pre>
+</div>
+</div>
+<div id="bc1a0ec3-e82c-4301-8541-1f6d23dbb9bd" class="cell" data-execution_count="10">
+<pre class="sage cell-code"><code>nf[1]/274177</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="10">
+<pre><code>67280421310721</code></pre>
+</div>
+</div>
+<div id="142ffd35-9bef-4305-a0ad-3d0543a29bb4" class="cell" data-execution_count="11">
+<pre class="sage cell-code"><code>is_prime(67280421310721)</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="11">
+<pre><code>True</code></pre>
+</div>
+</div>
+<div id="64574e31-4245-435c-8cbc-890e83047366" class="cell" data-execution_count="12">
+<pre class="sage cell-code"><code>nf[2]/59649589127497217</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="12">
+<pre><code>5704689200685129054721</code></pre>
+</div>
+</div>
+<div id="dddb4572-acbc-4569-8d42-ca9577e5f1fe" class="cell" data-execution_count="13">
+<pre class="sage cell-code"><code>is_prime(5704689200685129054721)</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="13">
+<pre><code>True</code></pre>
+</div>
+</div>
+<div id="909a5f43-0448-4e1c-8a20-3f4bc435c9b7" class="cell" data-execution_count="14">
+<pre class="sage cell-code"><code>nf[3]/1238926361552897</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="14">
+<pre><code>93461639715357977769163558199606896584051237541638188580280321</code></pre>
+</div>
+</div>
+<div id="8bcec139-ee5e-4efc-bcd7-16df2723d316" class="cell" data-execution_count="15">
+<pre class="sage cell-code"><code>is_prime(93461639715357977769163558199606896584051237541638188580280321)</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="15">
+<pre><code>True</code></pre>
+</div>
+</div>
+<div id="268bafc4-435a-4836-9f33-50f747fe1c93" class="cell" data-execution_count="16">
+<pre class="sage cell-code"><code>nf[4]/2424833</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="16">
+<pre><code>5529373746539492451469451709955220061537996975706118061624681552800446063738635599565773930892108210210778168305399196915314944498011438291393118209</code></pre>
+</div>
+</div>
+<div id="dbb5ad8d-0405-41d2-aa15-1657575dafdd" class="cell" data-execution_count="17">
+<pre class="sage cell-code"><code>is_prime(5529373746539492451469451709955220061537996975706118061624681552800446063738635599565773930892108210210778168305399196915314944498011438291393118209)</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="17">
+<pre><code>False</code></pre>
+</div>
+</div>
+<div id="98690749-88e3-4ab1-8e05-7e34423188ba" class="cell" data-execution_count="25">
+<pre class="sage cell-code"><code>nf[5]/45592577</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="25">
+<pre><code>3942951359960012586542991835686376608231592127249807732373409846031135195659174148737161255930050543559319182152642816343958573976075461198274610155058226350701077796608546283231637018483208223116080561800334422176622099740983337736621316898600121619871377542107047343253864459964167331555646795960321</code></pre>
+</div>
+</div>
+<div id="6f93e554-d7b3-4119-b120-6c410fc849af" class="cell" data-execution_count="26">
+<pre class="sage cell-code"><code>is_prime(3942951359960012586542991835686376608231592127249807732373409846031135195659174148737161255930050543559319182152642816343958573976075461198274610155058226350701077796608546283231637018483208223116080561800334422176622099740983337736621316898600121619871377542107047343253864459964167331555646795960321)</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="26">
+<pre><code>False</code></pre>
+</div>
+</div>
+<div id="14f2a790-ca7d-4f8c-85fd-a5e34fff0c16" class="cell" data-execution_count="27">
+<pre class="sage cell-code"><code>nf[6]/319489</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="27">
+<pre><code>101152171346465785365739905563790778275446424351747584524444802254614885454171789617787158279386499891040749324458425859713854183244152133860909616251101863039512713637405344446131784663602352840930541077733717180487566766438342966931062084574042206368862921265008513729385286790910065162204496552694867070609361616173540692858549041708993328392702647150062512506151403207406283761595736673720405375033810606080158013948717662760215065784116654734290374983906448207065425365852408720566771005345821995341556493590254118091846659097349200248570452085641250044738949182704974520704370036542579394575574913724915713</code></pre>
+</div>
+</div>
+<div id="efc30f84-d4f5-4d21-8d49-707d2fdaa4b8" class="cell" data-execution_count="28">
+<pre class="sage cell-code"><code>is_prime(101152171346465785365739905563790778275446424351747584524444802254614885454171789617787158279386499891040749324458425859713854183244152133860909616251101863039512713637405344446131784663602352840930541077733717180487566766438342966931062084574042206368862921265008513729385286790910065162204496552694867070609361616173540692858549041708993328392702647150062512506151403207406283761595736673720405375033810606080158013948717662760215065784116654734290374983906448207065425365852408720566771005345821995341556493590254118091846659097349200248570452085641250044738949182704974520704370036542579394575574913724915713)</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="28">
+<pre><code>False</code></pre>
+</div>
+</div>
+<div id="9374d2c7-5d4b-4539-880e-24fc96130342" class="cell" data-execution_count="29">
+<pre class="sage cell-code"><code>nf[7]/114689</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="29">
+<pre><code>9106268965752186405773463110818163752233991481723476361152625650968740750826648212547208641935996986118024454955917854702609434541985662158212523327009262247869952450049350838706079834460006786304075107567909269645531121898331250125751682239313156601738683820643686003638396435055834553570682260579462973839574318172464558815116581626749391315641251152532705571615644886981829338611134458123396450764186936496833100701185274214915961723337127995182593580031119299575446791424418154036863609858251201843852076223383379133238000289598800458955855329052103961332983048473420515918928565951506637819342706575976725030506905683310915700945442329953941604008255667676914945655757474715779252371155778495946746587469464160684843488975918662295274965457887082037460184558511575570318625886351712499453155527762335682281851520733417380809781252979478377941937578568481859702438295520231435016188495646093490407803983345420364088331996467459309353537828143080691834120737157445502646809195267166779721413577366833939771467773331873590129210913628329073978766992198221682739812652450408607796042492802295258713711959073218748776359806123717024800451461326745599716651128725627280643537507664130920416107218492950792456907321580171946770433</code></pre>
+</div>
+</div>
+<div id="8641ec40-1dfe-438e-9a12-7607c2aed78a" class="cell" data-execution_count="30">
+<pre class="sage cell-code"><code>is_prime(9106268965752186405773463110818163752233991481723476361152625650968740750826648212547208641935996986118024454955917854702609434541985662158212523327009262247869952450049350838706079834460006786304075107567909269645531121898331250125751682239313156601738683820643686003638396435055834553570682260579462973839574318172464558815116581626749391315641251152532705571615644886981829338611134458123396450764186936496833100701185274214915961723337127995182593580031119299575446791424418154036863609858251201843852076223383379133238000289598800458955855329052103961332983048473420515918928565951506637819342706575976725030506905683310915700945442329953941604008255667676914945655757474715779252371155778495946746587469464160684843488975918662295274965457887082037460184558511575570318625886351712499453155527762335682281851520733417380809781252979478377941937578568481859702438295520231435016188495646093490407803983345420364088331996467459309353537828143080691834120737157445502646809195267166779721413577366833939771467773331873590129210913628329073978766992198221682739812652450408607796042492802295258713711959073218748776359806123717024800451461326745599716651128725627280643537507664130920416107218492950792456907321580171946770433)</code></pre>
+<div class="cell-output cell-output-display" data-execution_count="30">
+<pre><code>False</code></pre>
+</div>
+</div>
+<p>Las factorizaciones son:</p>
+<p>F_5 = 641*6700417</p>
+<p>F_6 = 274177*67280421310721</p>
+<p>F_7 = 59649589127497217*5704689200685129054721</p>
+<p>F_8 = 1238926361552897 * 93461639715357977769163558199606896584051237541638188580280321</p>
+<p>F_9 = 2424833 * 5529373746539492451469451709955220061537996975706118061624681552800446063738635599565773930892108210210778168305399196915314944498011438291393118209 (El segundo factor no podemos factorizarlo o comprobar si realmente es primo)</p>
+<p>F_10 = 45592577 * 3942951359960012586542991835686376608231592127249807732373409846031135195659174148737161255930050543559319182152642816343958573976075461198274610155058226350701077796608546283231637018483208223116080561800334422176622099740983337736621316898600121619871377542107047343253864459964167331555646795960321</p>
+<p>F_11 = 319489 * 101152171346465785365739905563790778275446424351747584524444802254614885454171789617787158279386499891040749324458425859713854183244152133860909616251101863039512713637405344446131784663602352840930541077733717180487566766438342966931062084574042206368862921265008513729385286790910065162204496552694867070609361616173540692858549041708993328392702647150062512506151403207406283761595736673720405375033810606080158013948717662760215065784116654734290374983906448207065425365852408720566771005345821995341556493590254118091846659097349200248570452085641250044738949182704974520704370036542579394575574913724915713</p>
+<p>F_12 = 114689 * 9106268965752186405773463110818163752233991481723476361152625650968740750826648212547208641935996986118024454955917854702609434541985662158212523327009262247869952450049350838706079834460006786304075107567909269645531121898331250125751682239313156601738683820643686003638396435055834553570682260579462973839574318172464558815116581626749391315641251152532705571615644886981829338611134458123396450764186936496833100701185274214915961723337127995182593580031119299575446791424418154036863609858251201843852076223383379133238000289598800458955855329052103961332983048473420515918928565951506637819342706575976725030506905683310915700945442329953941604008255667676914945655757474715779252371155778495946746587469464160684843488975918662295274965457887082037460184558511575570318625886351712499453155527762335682281851520733417380809781252979478377941937578568481859702438295520231435016188495646093490407803983345420364088331996467459309353537828143080691834120737157445502646809195267166779721413577366833939771467773331873590129210913628329073978766992198221682739812652450408607796042492802295258713711959073218748776359806123717024800451461326745599716651128725627280643537507664130920416107218492950792456907321580171946770433</p>
+<p>Dadas las longitudes de los últimos factores, necesitamos recurrir a otras herramientas extra para comprobar si son primos o se pueden seguir descomponiendo en factores.</p>
+</section>
+<section id="ejercicio-5" class="level3">
+<h3 class="anchored" data-anchor-id="ejercicio-5">Ejercicio 5</h3>
+<div id="fdb074cf-1254-4693-b5bc-15e95ef4c821" class="cell" data-execution_count="164">
+<pre class="sage cell-code"><code>R.&lt;x&gt; = ZZ[]
+def criba(n,t):
+    Zn = IntegerModRing(n)
+    S = [b for b in prime_range(100) if kronecker_symbol(n,b)==1]
+    B = [-1]
+    B.extend(S)
+    lx = []
+    x1 = 0
+    for k in range(2*t+1):
+        if k % 2 == 0:
+            lx.append(x1)
+            x1 += 1
+        else:
+            lx.append(-x1)
+    m = integer_floor(sqrt(n))
+    pares = []
+    i = 0
+    k = 0
+    while i &lt; t+1:
+        b = (lx[k]+m)^2-n
+        </code></pre>
+</div>
+<p>He intentado programarlo pero no entiendo el algoritmo descrito en los apuntes y no he encontrado ayuda en internet. El paso 3 no tengo forma de entender el cálculo de los <span class="math inline">\(a_i\)</span> ni de los <span class="math inline">\(b_i\)</span>.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
